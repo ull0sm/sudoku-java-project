@@ -18,23 +18,35 @@ public class SudokuGUI {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
 
-        JPanel gridPanel = new JPanel(new GridLayout(9, 9)); // Panel for the Sudoku grid
+        JPanel gridPanel = new JPanel();
+        gridPanel.setLayout(new GridLayout(3, 3, 2, 2)); // Create a grid of 3x3 panels
 
-        // Create text fields for the Sudoku grid
-        for (int row = 0; row < 9; row++) {
-            for (int col = 0; col < 9; col++) {
-                textFields[row][col] = new JTextField();
-                textFields[row][col].setHorizontalAlignment(JTextField.CENTER);
-                textFields[row][col].setEditable(false); // Make fields non-editable
+        // Create 3x3 sub-panels
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                JPanel subPanel = new JPanel(new GridLayout(3, 3));
+                subPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2)); // Border for each 3x3 block
 
-                // Optionally, disable fields with pre-filled numbers
-                if (board.getBoard()[row][col] != 0) {
-                    textFields[row][col].setText(String.valueOf(board.getBoard()[row][col]));
-                    // You can also use this to visually indicate pre-filled cells
-                    textFields[row][col].setBackground(Color.LIGHT_GRAY); // Optional
+                // Create text fields for the 3x3 block
+                for (int row = 0; row < 3; row++) {
+                    for (int col = 0; col < 3; col++) {
+                        int boardRow = i * 3 + row;
+                        int boardCol = j * 3 + col;
+
+                        textFields[boardRow][boardCol] = new JTextField();
+                        textFields[boardRow][boardCol].setHorizontalAlignment(JTextField.CENTER);
+                        textFields[boardRow][boardCol].setEditable(false);
+
+                        if (board.getBoard()[boardRow][boardCol] != 0) {
+                            textFields[boardRow][boardCol].setText(String.valueOf(board.getBoard()[boardRow][boardCol]));
+                            textFields[boardRow][boardCol].setBackground(Color.LIGHT_GRAY);
+                        }
+
+                        subPanel.add(textFields[boardRow][boardCol]);
+                    }
                 }
 
-                gridPanel.add(textFields[row][col]);
+                gridPanel.add(subPanel);
             }
         }
 
@@ -48,7 +60,7 @@ public class SudokuGUI {
 
         frame.add(buttonPanel, BorderLayout.SOUTH);
 
-        frame.setSize(600, 600);
+        frame.setSize(700, 700);
         frame.setVisible(true);
     }
 
@@ -56,7 +68,6 @@ public class SudokuGUI {
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                // Get row, column, and number from user input
                 String rowInput = JOptionPane.showInputDialog("Enter row (0-8):");
                 String colInput = JOptionPane.showInputDialog("Enter column (0-8):");
                 String numInput = JOptionPane.showInputDialog("Enter number (1-9):");
@@ -65,11 +76,10 @@ public class SudokuGUI {
                 int col = Integer.parseInt(colInput);
                 int number = Integer.parseInt(numInput);
 
-                // Allow moves only if the cell is empty (0)
                 if (board.getBoard()[row][col] == 0 && board.isValidMove(row, col, number)) {
                     board.makeMove(row, col, number);
                     textFields[row][col].setText(String.valueOf(number));
-                    textFields[row][col].setBackground(Color.WHITE); // Reset background color
+                    textFields[row][col].setBackground(Color.WHITE);
 
                     if (board.isSolved()) {
                         JOptionPane.showMessageDialog(null, "Congratulations! You've solved the Sudoku!");
