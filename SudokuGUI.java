@@ -1,7 +1,9 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 public class SudokuGUI {
     private final SudokuBoard board;
@@ -19,15 +21,13 @@ public class SudokuGUI {
         frame.setLayout(new BorderLayout());
 
         JPanel gridPanel = new JPanel();
-        gridPanel.setLayout(new GridLayout(3, 3, 2, 2)); // Create a grid of 3x3 panels
+        gridPanel.setLayout(new GridLayout(3, 3, 2, 2));
 
-        // Create 3x3 sub-panels
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
                 JPanel subPanel = new JPanel(new GridLayout(3, 3));
-                subPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2)); // Border for each 3x3 block
+                subPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
 
-                // Create text fields for the 3x3 block
                 for (int row = 0; row < 3; row++) {
                     for (int col = 0; col < 3; col++) {
                         int boardRow = i * 3 + row;
@@ -35,11 +35,15 @@ public class SudokuGUI {
 
                         textFields[boardRow][boardCol] = new JTextField();
                         textFields[boardRow][boardCol].setHorizontalAlignment(JTextField.CENTER);
-                        textFields[boardRow][boardCol].setEditable(false);
 
+                        // Set initial value and style
                         if (board.getBoard()[boardRow][boardCol] != 0) {
                             textFields[boardRow][boardCol].setText(String.valueOf(board.getBoard()[boardRow][boardCol]));
                             textFields[boardRow][boardCol].setBackground(Color.LIGHT_GRAY);
+                            textFields[boardRow][boardCol].setEditable(false); // Make non-editable
+                        } else {
+                            textFields[boardRow][boardCol].setEditable(true); // Allow editing for empty cells
+                            setupInputValidation(textFields[boardRow][boardCol], boardRow, boardCol);
                         }
 
                         subPanel.add(textFields[boardRow][boardCol]);
@@ -52,45 +56,45 @@ public class SudokuGUI {
 
         frame.add(gridPanel, BorderLayout.CENTER);
 
-        // Create a button panel for the Submit Move button
-        JPanel buttonPanel = new JPanel();
-        JButton submitButton = new JButton("Submit Move");
-        submitButton.addActionListener(new SubmitMoveListener());
-        buttonPanel.add(submitButton);
-
-        frame.add(buttonPanel, BorderLayout.SOUTH);
+        // Removed button panel and submit button
 
         frame.setSize(700, 700);
         frame.setVisible(true);
     }
 
-    private class SubmitMoveListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            try {
-                String rowInput = JOptionPane.showInputDialog("Enter row (0-8):");
-                String colInput = JOptionPane.showInputDialog("Enter column (0-8):");
-                String numInput = JOptionPane.showInputDialog("Enter number (1-9):");
-
-                int row = Integer.parseInt(rowInput);
-                int col = Integer.parseInt(colInput);
-                int number = Integer.parseInt(numInput);
-
-                if (board.getBoard()[row][col] == 0 && board.isValidMove(row, col, number)) {
-                    board.makeMove(row, col, number);
-                    textFields[row][col].setText(String.valueOf(number));
-                    textFields[row][col].setBackground(Color.WHITE);
-
-                    if (board.isSolved()) {
-                        JOptionPane.showMessageDialog(null, "Congratulations! You've solved the Sudoku!");
-                    }
-                } else {
-                    JOptionPane.showMessageDialog(null, "Invalid move! Try again.");
+    private void setupInputValidation(JTextField textField, int row, int col) {
+        textField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                if (!Character.isDigit(e.getKeyChar()) || textField.getText().length() >= 1) {
+                    e.consume(); // Ignore if not a digit or already has one character
                 }
-            } catch (InvalidInputException | NumberFormatException ex) {
-                JOptionPane.showMessageDialog(null, ex.getMessage());
             }
-        }
+        });
+
+        textField.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                try {
+                    String input = textField.getText();
+                    if (!input.isEmpty()) {
+                        int number = Integer.parseInt(input);
+                        if (board.isValidMove(row, col, number)) {
+                            board.makeMove(row, col, number);
+                            textField.setBackground(Color.WHITE);
+                        } else {
+                            textField.setText(""); // Clear invalid input
+                            JOptionPane.showMessageDialog(null, "Invalid move! Try again.");
+                        }
+                    }
+                } catch (NumberFormatException ex) {
+                    textField.setText(""); // Clear invalid input
+                } catch (InvalidInputException ex) {
+                    textField.setText(""); // Clear invalid input
+                    JOptionPane.showMessageDialog(null, ex.getMessage());
+                }
+            }
+        });
     }
 
     public static void main(String[] args) {
