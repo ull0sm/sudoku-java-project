@@ -4,6 +4,7 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.Random;
 
 public class SudokuGUI {
     private final SudokuBoard board;
@@ -40,9 +41,9 @@ public class SudokuGUI {
                         if (board.getBoard()[boardRow][boardCol] != 0) {
                             textFields[boardRow][boardCol].setText(String.valueOf(board.getBoard()[boardRow][boardCol]));
                             textFields[boardRow][boardCol].setBackground(Color.LIGHT_GRAY);
-                            textFields[boardRow][boardCol].setEditable(false); // Make non-editable
+                            textFields[boardRow][boardCol].setEditable(false);
                         } else {
-                            textFields[boardRow][boardCol].setEditable(true); // Allow editing for empty cells
+                            textFields[boardRow][boardCol].setEditable(true);
                             setupInputValidation(textFields[boardRow][boardCol], boardRow, boardCol);
                         }
 
@@ -55,9 +56,6 @@ public class SudokuGUI {
         }
 
         frame.add(gridPanel, BorderLayout.CENTER);
-
-        // Removed button panel and submit button
-
         frame.setSize(700, 700);
         frame.setVisible(true);
     }
@@ -83,15 +81,12 @@ public class SudokuGUI {
                             board.makeMove(row, col, number);
                             textField.setBackground(Color.WHITE);
                         } else {
-                            textField.setText(""); // Clear invalid input
+                            textField.setText("");
                             JOptionPane.showMessageDialog(null, "Invalid move! Try again.");
                         }
                     }
                 } catch (NumberFormatException ex) {
                     textField.setText(""); // Clear invalid input
-                } catch (InvalidInputException ex) {
-                    textField.setText(""); // Clear invalid input
-                    JOptionPane.showMessageDialog(null, ex.getMessage());
                 }
             }
         });
@@ -99,5 +94,74 @@ public class SudokuGUI {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(SudokuGUI::new);
+    }
+}
+
+class SudokuBoard {
+    private int[][] board;
+    private Random random;
+
+    public SudokuBoard() {
+        board = new int[9][9];
+        random = new Random();
+        generateSudoku();
+    }
+
+    public int[][] getBoard() {
+        return board;
+    }
+
+    private void generateSudoku() {
+        fillBoard();
+        removeNumbers(); // Optionally remove numbers to create the puzzle
+    }
+
+    private boolean fillBoard() {
+        for (int row = 0; row < 9; row++) {
+            for (int col = 0; col < 9; col++) {
+                if (board[row][col] == 0) {
+                    for (int num = 1; num <= 9; num++) {
+                        if (isValidPlacement(row, col, num)) {
+                            board[row][col] = num; // Place the number
+                            if (fillBoard()) { // Recursively try to fill the next cells
+                                return true;
+                            }
+                            board[row][col] = 0; // Backtrack
+                        }
+                    }
+                    return false; // No valid number found, trigger backtracking
+                }
+            }
+        }
+        return true; // Board is filled
+    }
+
+    private boolean isValidPlacement(int row, int col, int num) {
+        for (int x = 0; x < 9; x++) {
+            if (board[row][x] == num || board[x][col] == num || board[row - row % 3 + x / 3][col - col % 3 + x % 3] == num) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void removeNumbers() {
+        int count = 40; // Number of cells to remove
+        while (count > 0) {
+            int i = random.nextInt(9);
+            int j = random.nextInt(9);
+            if (board[i][j] != 0) {
+                board[i][j] = 0; // Remove number
+                count--;
+            }
+        }
+    }
+
+    public boolean isValidMove(int row, int col, int number) {
+        return isValidPlacement(row, col, number);
+    }
+
+    public void makeMove(int row, int col, int number) {
+        board[row][col] = number;
     }
 }
