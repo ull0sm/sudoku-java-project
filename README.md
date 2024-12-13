@@ -28,20 +28,37 @@ git clone https://github.com/ull0sm/sudoku-java-project
 cd sudoku-game
 ```
 
-### 2. Build the Project
-Using the Makefile:
+### 2. Build the Project (Linux Users)
+On Linux-based systems, you can use the `make` command:
 ```bash
 make
 ```
 
+For users on other operating systems (e.g., Windows or macOS), you can manually compile the project using `javac`:
+```bash
+javac -d bin src/*.java
+```
+
 ### 3. Run the Game
+On Linux:
 ```bash
 make run
 ```
 
+On other systems:
+```bash
+java -cp bin SudokuGUI
+```
+
 ### 4. Clean the Build
+On Linux:
 ```bash
 make clean
+```
+
+Manually (if not using `make`):
+```bash
+rm -rf bin/*.class
 ```
 
 ## Usage
