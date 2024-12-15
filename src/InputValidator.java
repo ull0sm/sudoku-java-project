@@ -1,4 +1,4 @@
-package src;
+
 
 public class InputValidator {
     public static boolean isValidDigit(String input) {

@@ -19,7 +19,7 @@ public class SudokuCell extends JTextField {
         setupInputValidation();
     }
 
-    private void setupInitialValue() {
+    public void setupInitialValue() { // Changed to public
         int value = board.getBoard()[row][col];
         if (value != 0) {
             setText(String.valueOf(value));
@@ -27,6 +27,7 @@ public class SudokuCell extends JTextField {
             setEditable(false);
         } else {
             setEditable(true);
+            setText(""); // Clear any previous input
             setBackground(Color.WHITE); // Set editable cell background to white
         }
     }
