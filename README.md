@@ -74,3 +74,4 @@ This project was developed as a collaborative mini project. Contributions are we
 - Commit your changes
 - Push to the branch (`git push origin feature-branch`)
 - Open a pull request
+---
